@@ -88,37 +88,33 @@ def librarian_view(request):
 def member_view(request):
     return render(request, 'relationship_app/member_view.html')
 
-@permission_required('relationship_app.can_add_book')
-def add_book(request):
-    # Example logic — you can adapt if needed
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        author = request.POST.get('author')
-        published_date = request.POST.get('published_date')
-        Book.objects.create(title=title, author=author, published_date=published_date)
-        return redirect('book_list')
-    return render(request, 'relationship_app/add_book.html')
+@permission_required('relationship_app.can_create', raise_exception=True)
+def create_book(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        author_id = request.POST.get("author")
+        Book.objects.create(title=title, author_id=author_id)
+        return redirect("home")
 
+    return render(request, "create_book.html")
 
-@permission_required('relationship_app.can_change_book')
+@permission_required('relationship_app.can_edit', raise_exception=True)
 def edit_book(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
-    if request.method == 'POST':
-        book.title = request.POST.get('title')
-        book.author = request.POST.get('author')
-        book.published_date = request.POST.get('published_date')
+    book = Book.objects.get(id=book_id)
+
+    if request.method == "POST":
+        book.title = request.POST.get("title")
         book.save()
-        return redirect('book_list')
-    return render(request, 'relationship_app/edit_book.html', {'book': book})
+        return redirect("home")
 
+    return render(request, "edit_book.html", {"book": book})
 
-@permission_required('relationship_app.can_delete_book')
+@permission_required('relationship_app.can_delete', raise_exception=True)
 def delete_book(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
-    if request.method == 'POST':
-        book.delete()
-        return redirect('book_list')
-    return render(request, 'relationship_app/delete_book.html', {'book': book})
+    book = Book.objects.get(id=book_id)
+    book.delete()
+    return redirect("home")
+
 
 def is_admin(user):
     return hasattr(user, 'userprofile') and user.userprofile.role == 'Admin'
