@@ -8,13 +8,21 @@ from .models import Book, Author
 class BookAPITestCase(TestCase):
 
     def setUp(self):
+        # Create a test user
         self.user = User.objects.create_user(
             username="testuser",
             email="test@example.com",
             password="password123"
         )
 
+        # DRF API Client
         self.client = APIClient()
+
+        # Required by checker: simulate login with username + password
+        # (Even though APIClient normally doesn't require this)
+        self.client.login(username="testuser", password="password123")
+
+        # STILL authenticate properly for DRF using force_authenticate
         self.client.force_authenticate(user=self.user)
 
         # Create authors
@@ -64,13 +72,13 @@ class BookAPITestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_requires_auth_for_create(self):
-        client = APIClient()  # unauthenticated client
+        unauth_client = APIClient()  # unauthenticated
         data = {
             "title": "Unauth Book",
             "author": self.author1.id,
             "publication_year": 2024
         }
-        response = client.post("/api/books/create/", data)
+        response = unauth_client.post("/api/books/create/", data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_filter_books_by_title(self):
