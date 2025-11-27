@@ -1,173 +1,192 @@
 📘 Advanced API Project — Django REST Framework
 
-This project expands a Django REST Framework API by implementing generic views, mixins, and custom permission handling. It provides complete CRUD functionality for managing Book and Author data while demonstrating best practices in API development.
+This project is part of the ALX Django LearnLab curriculum. It demonstrates building an advanced REST API using Django REST Framework (DRF), including:
 
-🚀 Project Features
-✅ Book API (CRUD)
+CRUD operations for books
+
+Permissions & user authentication
+
+Filtering, searching, and ordering
+
+DjangoFilterBackend integration
+
+Comprehensive unit testing
+
+API documentation
+
+📂 Project Structure
+advanced-api-project/
+│
+├── api/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── test_views.py
+│   └── ...
+│
+├── advanced_project/
+│   ├── settings.py
+│   ├── urls.py
+│   └── ...
+│
+└── manage.py
+
+✨ Features
+✔ Full CRUD for Book model
 
 List all books
 
 Retrieve a single book
 
-Create a new book
+Create, update, delete (requires authentication)
 
-Update an existing book
+✔ Permissions
 
-Delete a book
+Anyone can list & view book details
 
-Validates publication year (cannot be in the future)
+Only authenticated users can create, update, or delete
 
-✅ Author API
+DRF permissions used:
 
-Returns authors with all their related books (nested serialization)
+IsAuthenticated, IsAuthenticatedOrReadOnly
 
-✅ Permissions
+✔ Filtering, Searching, Ordering
 
-Anyone can read (GET requests)
+Supported via query parameters:
 
-Authenticated users only can create, update, or delete
+Feature	Example
+Filter by title	?title=Alpha Book
+Search title/author	?search=John
+Order by fields	?ordering=title
+✔ Unit Tests
 
-✅ Filters & Search (Optional Enhancements)
+Covers:
 
-Search books by title or author name
+CRUD operations
 
-Ordering by title or publication year
+Permissions
 
-📁 Project Structure
-advanced-api-project/
-│── api/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   ├── urls.py
-│── manage.py
-└── README.md
+Filtering
 
-🧩 API Endpoints
-📚 Books
-GET /api/books/
+Searching
 
-List all books.
+Ordering
 
-POST /api/books/
+Runs with:
 
-Create a new book (auth required).
+python manage.py test api
 
-Example body:
-
-{
-    "title": "New Book",
-    "author": 1,
-    "publication_year": 2020
-}
-
-GET /api/books/<id>/
-
-Retrieve details of a single book.
-
-PUT /api/books/<id>/
-
-Update book details (auth required).
-
-DELETE /api/books/<id>/
-
-Delete a book (auth required).
-
-🧑‍🏫 Authors
-GET /api/authors/
-
-Returns a list of authors + all books written by them.
-
-🧠 View Configurations
-BookListCreateView
-
-Handles:
-
-GET (list)
-
-POST (create)
-
-Permissions:
-
-GET → AllowAny
-
-POST → IsAuthenticated
-
-Includes:
-
-Search filter
-
-Ordering filter (optional)
-
-Validation from serializer
-
-BookRetrieveUpdateDeleteView
-
-Handles:
-
-GET (retrieve)
-
-PUT/PATCH (update)
-
-DELETE (delete)
-
-Permissions:
-
-GET → AllowAny
-
-PUT/PATCH/DELETE → IsAuthenticated
-
-🔐 Permissions
-
-Implemented using get_permissions() in views:
-
-def get_permissions(self):
-    if self.request.method in ["POST", "PUT", "PATCH", "DELETE"]:
-        return [permissions.IsAuthenticated()]
-    return [permissions.AllowAny()]
-
-🧪 Testing the API
-
-You can test API endpoints using:
-
-Postman
-
-Insomnia
-
-curl
-
-Django REST Framework interactive UI
-
-Examples:
-
-Test Listing Books
-GET http://127.0.0.1:8000/api/books/
-
-Test Creating a Book
-POST http://127.0.0.1:8000/api/books/
-Authorization: Token or Session Auth
-
-🛠 Installation & Setup
-git clone https://github.com/<your-username>/Alx_DjangoLearnLab.git
+📦 Installation & Setup
+1. Clone the Repo
+git clone <your_repo_url>
 cd advanced-api-project
+
+2. Create Virtual Environment
+python -m venv venv
+venv\Scripts\activate  # Windows
+
+3. Install Dependencies
 pip install -r requirements.txt
+
+4. Apply Migrations
 python manage.py migrate
+
+5. Run Dev Server
 python manage.py runserver
 
-✍️ Notes & Customizations
+🧩 API Endpoints
+Books
+Method	Endpoint	Description
+GET	/api/books/	List all books (supports filtering/searching/ordering)
+GET	/api/books/<id>/	Retrieve single book
+POST	/api/books/create/	Create book (auth required)
+PUT	/api/books/update/<id>/	Update book (auth required)
+DELETE	/api/books/delete/<id>/	Delete book (auth required)
+🔍 Filtering, Searching & Ordering
+✔ Filtering
+/api/books/?title=Alpha Book
 
-The BookSerializer includes a custom validation method to prevent future publication dates.
+✔ Searching
 
-Authors include nested book data through the books = BookSerializer(many=True) field.
+Searches title and author__name:
 
-Views can be extended with authentication such as:
+/api/books/?search=Alpha
 
-Token Authentication
+✔ Ordering
 
-Session Authentication
+Order by title:
 
-JWT (via simplejwt)
+/api/books/?ordering=title
 
-📄 License
 
-This project is for educational purposes under the ALX Software Engineering Program.
+Order by publication year descending:
+
+/api/books/?ordering=-publication_year
+
+🧪 Running Tests
+
+Tests are located in:
+
+api/test_views.py
+
+
+Run tests:
+
+python manage.py test api
+
+
+All tests include:
+
+Create book
+
+Update book
+
+Delete book
+
+List & detail
+
+Permissions
+
+Filtering, searching, ordering
+
+🛠 Technology Stack
+
+Python 3.12+
+
+Django 5
+
+Django REST Framework
+
+django-filter
+
+📄 Example Output (List Books Response)
+[
+  {
+    "id": 1,
+    "title": "Alpha Book",
+    "author": 3,
+    "publication_year": 2000
+  }
+]
+
+📝 Notes
+
+Uses DRF generic class-based views for clean API handling
+
+Strict permission rules ensure secure API usage
+
+Tests run in an isolated in-memory database
+
+Designed to meet all ALX checker requirements
+
+🎉 Completed Requirements
+
+✔ CRUD views
+✔ Permissions (IsAuthenticatedOrReadOnly & IsAuthenticated)
+✔ URL configuration
+✔ Filtering (DjangoFilterBackend)
+✔ Searching (SearchFilter)
+✔ Ordering (OrderingFilter)
+✔ Unit tests for all endpoints
+✔ Updated project README
