@@ -10,6 +10,11 @@
 <body>
     <header>
         <nav>
+            <form action="{% url 'search' %}" method="get" style="display:inline;">
+                <input type="text" name="q" placeholder="Search posts..." value="{{ request.GET.q|default_if_none:'' }}">
+                <button type="submit">Search</button>
+            </form>
+
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="{% url 'posts' %}">Blog Posts</a></li>

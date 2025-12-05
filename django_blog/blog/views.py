@@ -1,15 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views as auth_views
 from .forms import CustomUserCreationForm, UserUpdateForm, ProfileForm
-from .models import Post
-from .forms import PostForm
+from .models import Post, Comment
+from .forms import PostForm, CommentForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Comment, Post
-from .forms import CommentForm
+from django.db.models import Q
+
 
 def home(request):
     return render(request, 'blog/base.html')
@@ -113,3 +113,40 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         comment = self.get_object()
         return self.request.user == comment.author
+
+class PostsByTagView(ListView):
+    model = Post
+    template_name = 'blog/posts_by_tag.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        tag = self.kwargs.get('tag_name')
+        return Post.objects.filter(tags__name__iexact=tag).order_by('-published_date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag_name'] = self.kwargs.get('tag_name')
+        return context
+
+class SearchResultsView(ListView):
+    model = Post
+    template_name = 'blog/search_results.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q', '')
+        if not query:
+            return Post.objects.none()
+        # Search title and content
+        qs = Post.objects.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query)
+        ).distinct()
+        # Also search tags: works for taggit and custom Tag model
+        try:
+            qs_tags = Post.objects.filter(tags__name__icontains=query)
+            qs = (qs | qs_tags).distinct()
+        except Exception:
+            # If tags field not present or different API, ignore
+            pass
+        return qs.order_by('-published_date')
