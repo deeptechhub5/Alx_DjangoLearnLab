@@ -26,3 +26,24 @@ Files added/changed:
 
 Testing:
 - Register a user, login, visit profile, update info, logout. Check admin to see Profile instances.
+
+## Comment System
+
+### Features
+- Users can comment on posts.
+- Only logged-in users may comment.
+- Comment authors may edit or delete their own comments.
+- Comments appear on the Post Detail page.
+- Uses Django generic class-based views (Create, Update, Delete).
+
+### Model Fields
+- `post` – ForeignKey to Post
+- `author` – ForeignKey to User
+- `content` – TextField
+- `created_at` – DateTimeField
+- `updated_at` – DateTimeField
+
+### URLs
+- Create:  /post/<post_id>/comment/new/
+- Update:  /comment/<pk>/update/
+- Delete:  /comment/<pk>/delete/
