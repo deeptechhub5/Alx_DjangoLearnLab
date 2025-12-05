@@ -1,10 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile
-from django import forms
-from .models import Post, Tag
-from .models import Comment
+
+from .models import Profile, Post, Comment
+from taggit.forms import TagWidget
+
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, help_text='Required. Enter a valid email address.')
@@ -19,6 +19,7 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError("This email address is already in use.")
         return email
 
+
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField(required=True)
 
@@ -26,18 +27,22 @@ class UserUpdateForm(forms.ModelForm):
         model = User
         fields = ('username', 'email')
 
+
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ('bio', 'avatar')
 
-class TagWidget(forms.TextInput):
-    pass 
 
+# Taggit already provides TagWidget — no need to override
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'content', 'tags']
+        widgets = {
+            'tags': TagWidget(),
+        }
+
 
 class CommentForm(forms.ModelForm):
     class Meta:
