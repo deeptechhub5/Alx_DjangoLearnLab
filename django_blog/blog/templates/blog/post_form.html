@@ -1,0 +1,13 @@
+{% extends "blog/base.html" %}
+{% block title %}Create or Edit Post{% endblock %}
+
+{% block content %}
+<h1>{{ view.object|yesno:"Edit Post,Create Post" }}</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+
+{% endblock %}
