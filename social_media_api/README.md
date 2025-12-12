@@ -278,3 +278,24 @@ social_media_api/
 │
 ├── manage.py
 └── README.md
+
+
+### Follow / Unfollow and Feed
+
+- `POST /api/accounts/follow/<user_id>/` — follow the user with id `user_id`.
+  - Headers: `Authorization: Token <token>`
+  - Example: `POST /api/accounts/follow/2/`
+
+- `POST /api/accounts/unfollow/<user_id>/` — unfollow the user with id `user_id`.
+  - Headers: `Authorization: Token <token>`
+
+- `GET /api/accounts/following/` — list users the authenticated user follows.
+  - Headers: `Authorization: Token <token>`
+
+- `GET /api/accounts/followers/` — list users that follow the authenticated user.
+  - Headers: `Authorization: Token <token>`
+
+- `GET /api/feed/` — get a paginated feed of posts from users the authenticated user follows.
+  - Headers: `Authorization: Token <token>`
+  - Query params: `page`, `page_size`
+  - Example: `GET /api/feed/?page=1&page_size=10`

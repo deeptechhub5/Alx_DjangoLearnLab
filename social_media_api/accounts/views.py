@@ -32,3 +32,62 @@ class ProfileView(APIView):
     def get(self, request):
         serializer = ProfileSerializer(request.user)
         return Response(serializer.data)
+
+
+class FollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        if request.user.id == user_id:
+            return Response({'detail': "You can't follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Add to following (directional)
+        request.user.following.add(target)
+        request.user.save()
+        return Response({'detail': f'You are now following {target.username}.'}, status=status.HTTP_200_OK)
+
+
+class UnfollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        if request.user.id == user_id:
+            return Response({'detail': "You can't unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        request.user.following.remove(target)
+        request.user.save()
+        return Response({'detail': f'You have unfollowed {target.username}.'}, status=status.HTTP_200_OK)
+
+
+class FollowingListView(APIView):
+    """
+    Returns the list of users the current user is following.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        following_qs = request.user.following.all()
+        serializer = ProfileSerializer(following_qs, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class FollowersListView(APIView):
+    """
+    Returns the list of users that follow the current user.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        followers_qs = request.user.followers.all()
+        serializer = ProfileSerializer(followers_qs, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
