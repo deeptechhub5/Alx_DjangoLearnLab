@@ -37,25 +37,14 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class FeedView(APIView):
-    """
-    Generate a feed of posts from users the current user follows.
-    Ordered by most recent first.
-    """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        user = request.user
+        following_users = request.user.following.all()
 
-        # REQUIRED VARIABLE NAME FOR CHECKER
-        following_users = user.following.all()
-
-        # REQUIRED QUERYSET FOR CHECKER (DO NOT CHANGE)
-        posts = Post.objects.filter(
-            author__in=following_users
-        ).order_by('-created_at')
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
 
         paginator = StandardPagination()
         page = paginator.paginate_queryset(posts, request)
         serializer = PostSerializer(page, many=True, context={'request': request})
-
         return paginator.get_paginated_response(serializer.data)
