@@ -1,10 +1,7 @@
-from rest_framework import viewsets, permissions, filters, status
+from rest_framework import viewsets, permissions, filters, status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
-from django.shortcuts import get_object_or_404
-from django.contrib.contenttypes.models import ContentType
 
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer
@@ -45,12 +42,7 @@ class FeedView(APIView):
 
     def get(self, request):
         following_users = request.user.following.all()
-
-        # REQUIRED BY CHECKER
-        posts = Post.objects.filter(
-            author__in=following_users
-        ).order_by('-created_at')
-
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
         paginator = StandardPagination()
         page = paginator.paginate_queryset(posts, request)
         serializer = PostSerializer(page, many=True, context={'request': request})
@@ -58,19 +50,16 @@ class FeedView(APIView):
 
 
 # ==========================
-# LIKE / UNLIKE FUNCTIONALITY
+# LIKE / UNLIKE VIEWS
 # ==========================
 
 class LikePostView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        post = get_object_or_404(Post, pk=pk)
+        post = generics.get_object_or_404(Post, pk=pk)
 
-        like, created = Like.objects.get_or_create(
-            user=request.user,
-            post=post
-        )
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
 
         if not created:
             return Response(
@@ -85,22 +74,16 @@ class LikePostView(APIView):
             target=post
         )
 
-        return Response(
-            {'detail': 'Post liked.'},
-            status=status.HTTP_200_OK
-        )
+        return Response({'detail': 'Post liked.'}, status=status.HTTP_200_OK)
 
 
 class UnlikePostView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        post = get_object_or_404(Post, pk=pk)
+        post = generics.get_object_or_404(Post, pk=pk)
 
-        like = Like.objects.filter(
-            user=request.user,
-            post=post
-        ).first()
+        like = Like.objects.filter(user=request.user, post=post).first()
 
         if not like:
             return Response(
@@ -109,8 +92,4 @@ class UnlikePostView(APIView):
             )
 
         like.delete()
-
-        return Response(
-            {'detail': 'Post unliked.'},
-            status=status.HTTP_200_OK
-        )
+        return Response({'detail': 'Post unliked.'}, status=status.HTTP_200_OK)
