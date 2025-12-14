@@ -1,16 +1,31 @@
 import os
 from pathlib import Path
+import dj_database_url
 
-# Base dir
+# BASE DIRECTORY
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'REPLACE_WITH_YOUR_SECRET_KEY'
+# SECURITY
+SECRET_KEY = os.environ.get('SECRET_KEY', 'unsafe-dev-key')
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '.herokuapp.com',
+    'localhost',
+    '127.0.0.1',
+]
 
-# Application definition
+# Security headers 
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_SSL_REDIRECT = True
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# APPLICATION DEFINITION
 INSTALLED_APPS = [
     # Django default apps
     'django.contrib.admin',
@@ -20,18 +35,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Third-party
+    # Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
 
     # Local apps
     'accounts',
-    'posts', 
+    'posts',
     'notifications',
 ]
 
+
+# MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -40,6 +58,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+# URL & TEMPLATES
 ROOT_URLCONF = 'social_media_api.urls'
 
 TEMPLATES = [
@@ -61,15 +81,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'social_media_api.wsgi.application'
 ASGI_APPLICATION = 'social_media_api.asgi.application'
 
-# Database (SQLite for dev)
+
+# DATABASE
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+    )
 }
 
-# Password validation (default)
+
+# PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -85,23 +106,33 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
+# INTERNATIONALIZATION
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static & media
+
+# STATIC & MEDIA FILES
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_STORAGE = (
+    'whitenoise.storage.CompressedManifestStaticFilesStorage'
+)
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# DEFAULT PRIMARY KEY
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom user model
+
+# CUSTOM USER MODEL
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
-# DRF config
+
+# DJANGO REST FRAMEWORK
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -109,7 +140,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
-
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
