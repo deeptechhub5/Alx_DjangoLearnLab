@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 import dj_database_url
 
+PORT = os.environ.get("PORT", "8000")
+
 # BASE DIRECTORY
 BASE_DIR = Path(__file__).resolve().parent.parent
 
